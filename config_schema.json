@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "properties": {
+    "enabled_protocols": {
+      "type": "array",
+      "title": "启用的协议",
+      "items": {
+        "type": "string",
+        "enum": [
+          "xml",
+          "antml",
+          "original",
+          "bracket",
+          "nous",
+          "dsml",
+          "custom"
+        ]
+      },
+      "default": [
+        "xml",
+        "antml",
+        "original",
+        "bracket",
+        "nous",
+        "dsml"
+      ],
+      "description": "启用的函数调用协议"
+    },
+    "custom_prompt_en": {
+      "type": "string",
+      "title": "Custom Protocol English Prompt",
+      "format": "textarea",
+      "description": "自定义协议的英文提示词"
+    },
+    "custom_prompt_zh": {
+      "type": "string",
+      "title": "Custom Protocol 中文提示词",
+      "format": "textarea",
+      "description": "自定义协议的中文提示词"
+    }
+  }
+}
