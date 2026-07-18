@@ -118,42 +118,9 @@ class OriginalProtocol(ToolProtocol):
 
             items = _extract_response_items(parsed)
             for item in items:
-                if not isinstance(item, dict):
-                    continue
-                if item.get("type") != "function_call":
-                    continue
-
-                name = item.get("name")
-                if not name:
-                    continue
-
-                call_id = item.get("call_id") or item.get("id") or f"call_{len(tool_calls)}"
-                args_raw = item.get("arguments", {})
-
-                # Schema 感知的参数类型转换
-                if schema_index and name in schema_index:
-                    args_dict = args_raw if isinstance(args_raw, dict) else {}
-                    args: Dict[str, Any] = {}
-                    for k, v in args_dict.items():
-                        pschema = schema_index[name].get(k, {})
-                        v_str = (
-                            v if isinstance(v, str)
-                            else json.dumps(v, ensure_ascii=False)
-                        )
-                        args[k] = _coerce_param_value(v_str, pschema)
-                    arguments = json.dumps(args, ensure_ascii=False)
-                else:
-                    arguments = (
-                        json.dumps(args_raw, ensure_ascii=False)
-                        if not isinstance(args_raw, str)
-                        else args_raw
-                    )
-
-                tool_calls.append({
-                    "id": call_id,
-                    "type": "function",
-                    "function": {"name": name, "arguments": arguments},
-                })
+                tc = _build_tool_call_from_item(item, schema_index, len(tool_calls))
+                if tc is not None:
+                    tool_calls.append(tc)
 
             # 标记这个 JSON 块已被消耗
             if items:
