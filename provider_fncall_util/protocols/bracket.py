@@ -3,10 +3,6 @@ import json
 import re
 from typing import List, Tuple
 
-from echotools.fncall.prompt.templates import (
-    _HISTORY_CLARIFY_EN,
-    _HISTORY_CLARIFY_ZH,
-)
 from echotools.fncall.shared.coercion import (
     _build_param_schema_index,
     _coerce_param_value,
@@ -14,24 +10,9 @@ from echotools.fncall.shared.coercion import (
 from echotools.fncall.shared.normalization import normalize_tool_calls
 from echotools.protocol.base import ToolProtocol
 
+from .extra.sections import join_tagged_sections
 
-class BracketProtocol(ToolProtocol):
-    @property
-    def id(self) -> str:
-        return "bracket"
-
-    _TRIGGER = "[function_calls]"
-    _END_TAG = "[/function_calls]"
-    _BLOCK_RE = re.compile(r"\[function_calls\]([\s\S]*?)\[/function_calls\]", re.DOTALL)
-    _CALL_RE = re.compile(r"\[call:([^\]]+)\]([\s\S]*?)\[/call\]", re.DOTALL)
-    # Fallback for incorrect [ToolName]{...}[/ToolName] format — only when body starts with {
-    _SIMPLE_CALL_RE = re.compile(r"\[([A-Za-z_][A-Za-z0-9_]*)\](\{[\s\S]*?)\[/\1\]", re.DOTALL)
-
-    def get_trigger_tags(self) -> List[str]:
-        return [self._TRIGGER]
-
-    def render_prompt(self, tool_descs, lang, user_system_prompt="", history_text="", loop_warning="", current_user_message=""):
-        instruction = f"""## Available Tools
+_BRACKET_INSTRUCTION = """## Available Tools
 You can invoke the following developer tools. Tool names are case-sensitive.
 Use only the exact tool names listed below. Do not rename, camelCase, translate, shorten, or invent tool names.
 
@@ -60,18 +41,41 @@ Example correct invocation:
 
 Tool results will be provided in a corresponding result block."""
 
-        sections = [instruction]
-        if user_system_prompt and user_system_prompt.strip():
-            sections.append(f"<user_system_prompt>\n{user_system_prompt.strip()}\n</user_system_prompt>")
-        if history_text:
-            clarify = _HISTORY_CLARIFY_ZH if lang == "zh" else _HISTORY_CLARIFY_EN
-            sections.append(f"<conversation_history>\n{clarify}\n\n{history_text}\n</conversation_history>")
-        if loop_warning:
-            sections.append(f"<loop_warning>\n{loop_warning}\n</loop_warning>")
-        if current_user_message:
-            sections.append(f"<current_user_message>\n{current_user_message}\n</current_user_message>")
 
-        return "\n\n".join(sections)
+class BracketProtocol(ToolProtocol):
+    @property
+    def id(self) -> str:
+        return "bracket"
+
+    _TRIGGER = "[function_calls]"
+    _END_TAG = "[/function_calls]"
+    _BLOCK_RE = re.compile(r"\[function_calls\]([\s\S]*?)\[/function_calls\]", re.DOTALL)
+    _CALL_RE = re.compile(r"\[call:([^\]]+)\]([\s\S]*?)\[/call\]", re.DOTALL)
+    # Fallback for incorrect [ToolName]{...}[/ToolName] format — only when body starts with {
+    _SIMPLE_CALL_RE = re.compile(r"\[([A-Za-z_][A-Za-z0-9_]*)\](\{[\s\S]*?)\[/\1\]", re.DOTALL)
+
+    def get_trigger_tags(self) -> List[str]:
+        return [self._TRIGGER]
+
+    def render_prompt(
+        self,
+        tool_descs,
+        lang,
+        user_system_prompt="",
+        history_text="",
+        loop_warning="",
+        history_markup_warning="",
+        current_user_message="",
+    ):
+        return join_tagged_sections(
+            _BRACKET_INSTRUCTION.format(tool_descs=tool_descs),
+            lang,
+            user_system_prompt,
+            history_text,
+            loop_warning,
+            history_markup_warning,
+            current_user_message,
+        )
 
     def detect_start(self, buffer: str) -> Tuple[bool, int]:
         pos = buffer.find(self._TRIGGER)

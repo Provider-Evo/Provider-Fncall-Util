@@ -23,7 +23,16 @@ class CustomProtocol(ToolProtocol):
     def get_trigger_tags(self) -> List[str]:
         return []
 
-    def render_prompt(self, tool_descs, lang, user_system_prompt="", history_text="", loop_warning="", current_user_message=""):
+    def render_prompt(
+        self,
+        tool_descs,
+        lang,
+        user_system_prompt="",
+        history_text="",
+        loop_warning="",
+        history_markup_warning="",
+        current_user_message="",
+    ):
         template = self._prompt_en if lang == "en" else self._prompt_zh
         if not template:
             return ""
@@ -33,6 +42,7 @@ class CustomProtocol(ToolProtocol):
         prompt = prompt.replace("{tool_descs}", tool_descs)
         prompt = prompt.replace("{history_text}", history_text)
         prompt = prompt.replace("{loop_warning}", loop_warning)
+        prompt = prompt.replace("{history_markup_warning}", history_markup_warning)
         prompt = prompt.replace("{current_user_message}", current_user_message)
         prompt = prompt.replace("{user_system_prompt}", user_system_prompt)
         return prompt

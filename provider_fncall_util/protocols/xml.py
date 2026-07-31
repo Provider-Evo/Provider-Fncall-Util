@@ -10,10 +10,6 @@ import json
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from echotools.fncall.prompt.templates import (
-    _HISTORY_CLARIFY_EN,
-    _HISTORY_CLARIFY_ZH,
-)
 from echotools.fncall.shared.coercion import (
     _build_param_schema_index,
     _coerce_param_value,
@@ -29,6 +25,8 @@ from echotools.fncall.shared.xml_helpers import (
 )
 from echotools.protocol.base import ToolProtocol
 
+from .extra.sections import join_tagged_sections
+
 # ---------------------------------------------------------------------------
 # XML 协议
 # ---------------------------------------------------------------------------
@@ -37,6 +35,20 @@ from echotools.protocol.base import ToolProtocol
 _XML_START = "<tool_calls>"
 _FNCALL_TAG_RE = re.compile(r"<function_calls>", re.DOTALL)
 _FUNC_CALLS_RE = re.compile(r"<function_calls>.*?</function_calls>", re.DOTALL)
+
+_XML_INSTRUCTION = f"""## Available Tools
+You can invoke the following developer tools. Tool names are case-sensitive.
+Use only the exact tool names listed below. Do not rename, camelCase, translate, shorten, or invent tool names.
+
+{{tool_descs}}
+
+When calling tools, respond with only this XML block:
+
+{_PROVIDER_START}<|PROVIDER|invoke name="exact_tool_name"><|PROVIDER|parameter name="argument"><![CDATA[value]]></|PROVIDER|parameter></|PROVIDER|invoke>{_PROVIDER_END}
+
+Tool results will be provided as XML result blocks:
+
+<|PROVIDER|tool_result tool_call_id="call_id"><![CDATA[result]]></|PROVIDER|tool_result>"""
 
 
 class XmlProtocol(ToolProtocol):
@@ -59,38 +71,19 @@ class XmlProtocol(ToolProtocol):
         user_system_prompt: str = "",
         history_text: str = "",
         loop_warning: str = "",
+        history_markup_warning: str = "",
         current_user_message: str = "",
     ) -> str:
-        """构建完整的 prompt 字符串，注入工具定义。
-
-        使用 <|PROVIDER| 命名空间的 managed XML 格式。
-        """
-        instruction = f"""## Available Tools
-You can invoke the following developer tools. Tool names are case-sensitive.
-Use only the exact tool names listed below. Do not rename, camelCase, translate, shorten, or invent tool names.
-
-{tool_descs}
-
-When calling tools, respond with only this XML block:
-
-{_PROVIDER_START}<|PROVIDER|invoke name="exact_tool_name"><|PROVIDER|parameter name="argument"><![CDATA[value]]></|PROVIDER|parameter></|PROVIDER|invoke>{_PROVIDER_END}
-
-Tool results will be provided as XML result blocks:
-
-<|PROVIDER|tool_result tool_call_id="call_id"><![CDATA[result]]></|PROVIDER|tool_result>"""
-
-        sections = [instruction]
-        if user_system_prompt and user_system_prompt.strip():
-            sections.append(f"<user_system_prompt>\n{user_system_prompt.strip()}\n</user_system_prompt>")
-        if history_text:
-            clarify = _HISTORY_CLARIFY_ZH if lang == "zh" else _HISTORY_CLARIFY_EN
-            sections.append(f"<conversation_history>\n{clarify}\n\n{history_text}\n</conversation_history>")
-        if loop_warning:
-            sections.append(f"<loop_warning>\n{loop_warning}\n</loop_warning>")
-        if current_user_message:
-            sections.append(f"<current_user_message>\n{current_user_message}\n</current_user_message>")
-
-        return "\n\n".join(sections)
+        """构建完整的 prompt 字符串，注入工具定义。"""
+        return join_tagged_sections(
+            _XML_INSTRUCTION.format(tool_descs=tool_descs),
+            lang,
+            user_system_prompt,
+            history_text,
+            loop_warning,
+            history_markup_warning,
+            current_user_message,
+        )
 
     def detect_start(self, buffer: str) -> Tuple[bool, int]:
         """检测 buffer 中是否包含触发标记。"""

@@ -62,6 +62,7 @@ class OriginalProtocol(ToolProtocol):
         user_system_prompt: str = "",
         history_text: str = "",
         loop_warning: str = "",
+        history_markup_warning: str = "",
         current_user_message: str = "",
     ) -> str:
         """该协议依赖平台原生工具调用，无需 prompt 注入。
@@ -81,6 +82,11 @@ class OriginalProtocol(ToolProtocol):
 
         if loop_warning:
             parts.append(f"<loop_warning>\n{loop_warning}\n</loop_warning>")
+
+        if history_markup_warning:
+            parts.append(
+                f"<history_markup_warning>\n{history_markup_warning}\n</history_markup_warning>"
+            )
 
         if current_user_message:
             parts.append(current_user_message)

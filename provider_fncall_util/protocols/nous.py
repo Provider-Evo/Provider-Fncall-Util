@@ -60,7 +60,16 @@ class NousProtocol(ToolProtocol):
     def format_tool_descs(self, tools):
         return _format_tool_descs_nous(tools)
 
-    def render_prompt(self, tool_descs, lang, user_system_prompt='', history_text='', loop_warning='', current_user_message=''):
+    def render_prompt(
+        self,
+        tool_descs,
+        lang,
+        user_system_prompt='',
+        history_text='',
+        loop_warning='',
+        history_markup_warning='',
+        current_user_message='',
+    ):
         ex = _FN_TAG + 'function_name' + _GT + '{"param": "value"}' + _FN_END
         if lang == 'zh':
             inst = (
@@ -86,6 +95,8 @@ class NousProtocol(ToolProtocol):
             sections.append(clarify + '\n\n' + history_text)
         if loop_warning:
             sections.append(loop_warning)
+        if history_markup_warning:
+            sections.append(history_markup_warning)
         if current_user_message:
             sections.append(current_user_message)
         return '\n\n'.join(sections)

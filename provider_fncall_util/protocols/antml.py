@@ -10,16 +10,14 @@ import json
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from echotools.fncall.prompt.templates import (
-    _HISTORY_CLARIFY_EN,
-    _HISTORY_CLARIFY_ZH,
-)
 from echotools.fncall.shared.coercion import (
     _build_param_schema_index,
     _coerce_param_value,
 )
 from echotools.logger.manager import get_logger
 from echotools.protocol.base import ToolProtocol
+
+from .extra.sections import join_tagged_sections
 
 logger = get_logger(__name__)
 
@@ -103,38 +101,21 @@ class AntmlProtocol(ToolProtocol):
         user_system_prompt: str = "",
         history_text: str = "",
         loop_warning: str = "",
+        history_markup_warning: str = "",
         current_user_message: str = "",
     ) -> str:
         """构建完整的 prompt 字符串，注入工具定义。"""
-        sections: List[str] = [_ANTML_INSTRUCTION]
-
-        # Add tool definitions in a functions block
-        sections.append("<functions>\n" + tool_descs + "\n</functions>")
-
-        if user_system_prompt and user_system_prompt.strip():
-            sections.append(
-                "<user_system_prompt>\n{}\n</user_system_prompt>".format(user_system_prompt.strip())
-            )
-
-        if history_text:
-            clarify = _HISTORY_CLARIFY_ZH if lang == "zh" else _HISTORY_CLARIFY_EN
-            sections.append(
-                "<conversation_history>\n{}\n\n{}\n</conversation_history>".format(clarify, history_text)
-            )
-
-        if loop_warning:
-            sections.append("<loop_warning>\n{}\n</loop_warning>".format(loop_warning))
-
-        if current_user_message:
-            sections.append(
-                "<current_user_message>\n{}\n</current_user_message>".format(current_user_message)
-            )
-        else:
-            sections.append("<current_user_message>\n</current_user_message>")
-
-        prompt = "\n\n".join(sections)
-
-        return prompt
+        instruction = _ANTML_INSTRUCTION + "\n\n<functions>\n" + tool_descs + "\n</functions>"
+        return join_tagged_sections(
+            instruction,
+            lang,
+            user_system_prompt,
+            history_text,
+            loop_warning,
+            history_markup_warning,
+            current_user_message,
+            empty_current_user=True,
+        )
 
     _TRIGGER_PREFIX = "<function_calls"
 
