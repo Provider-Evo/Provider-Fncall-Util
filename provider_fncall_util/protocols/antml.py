@@ -10,12 +10,12 @@ import json
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from echotools.fncall.shared.coercion import (
+from echotools.exec.fncall.shared.coercion import (
     _build_param_schema_index,
     _coerce_param_value,
 )
-from echotools.logger.manager import get_logger
-from echotools.protocol.base import ToolProtocol
+from echotools.base.logger.manager import get_logger
+from echotools.exec.protocol.base import ToolProtocol
 
 from .extra.sections import join_tagged_sections
 

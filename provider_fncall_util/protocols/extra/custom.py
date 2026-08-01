@@ -2,7 +2,7 @@
 
 from typing import List, Tuple
 
-from echotools.protocol.base import ToolProtocol
+from echotools.exec.protocol.base import ToolProtocol
 
 
 class CustomProtocol(ToolProtocol):

@@ -10,11 +10,11 @@ import json
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from echotools.fncall.shared.coercion import (
+from echotools.exec.fncall.shared.coercion import (
     _build_param_schema_index,
     _coerce_param_value,
 )
-from echotools.fncall.shared.xml_helpers import (
+from echotools.exec.fncall.shared.xml_helpers import (
     _PROVIDER_BLOCK_RE,
     _PROVIDER_END,
     _PROVIDER_INVOKE_RE,
@@ -23,7 +23,7 @@ from echotools.fncall.shared.xml_helpers import (
     escape_xml_attr,
     extract_cdata,
 )
-from echotools.protocol.base import ToolProtocol
+from echotools.exec.protocol.base import ToolProtocol
 
 from .extra.sections import join_tagged_sections
 
@@ -165,8 +165,9 @@ class XmlProtocol(ToolProtocol):
         text: str,
         tools: Optional[List[Dict[str, Any]]] = None,
     ) -> Tuple[str, List[Dict[str, Any]]]:
-        """回退到旧版 parse_fncall 解析。"""
-        from echotools.fncall.parsers.xml_parser import parse_fncall
+        """回退到旧版 function_calls 解析。"""
+        from src.core.fncall.parsers.xml_parser import parse_fncall
+
         return parse_fncall(text, tools=tools)
 
     def parse_fragment(
@@ -192,7 +193,8 @@ class XmlProtocol(ToolProtocol):
 
         # 回退
         if not tool_calls:
-            from echotools.fncall.parsers.xml_parser import parse_fncall_xml
+            from src.core.fncall.parsers.xml_parser import parse_fncall_xml
+
             tool_calls = parse_fncall_xml(fragment, tools=tools)
 
         return tool_calls

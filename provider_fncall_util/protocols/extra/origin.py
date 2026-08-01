@@ -16,15 +16,15 @@ import json
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
-from echotools.fncall.prompt.templates import (
+from echotools.exec.fncall.prompt.templates import (
     _HISTORY_CLARIFY_EN,
     _HISTORY_CLARIFY_ZH,
 )
-from echotools.fncall.shared.coercion import (
+from echotools.exec.fncall.shared.coercion import (
     _build_param_schema_index,
     _coerce_param_value,
 )
-from echotools.protocol.base import ToolProtocol
+from echotools.exec.protocol.base import ToolProtocol
 
 # ---------------------------------------------------------------------------
 # JSON 块定位正则

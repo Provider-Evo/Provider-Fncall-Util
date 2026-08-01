@@ -4,11 +4,11 @@ import json
 import re
 from typing import List
 
-from echotools.fncall.prompt.templates import (
+from echotools.exec.fncall.prompt.templates import (
     _HISTORY_CLARIFY_EN,
     _HISTORY_CLARIFY_ZH,
 )
-from echotools.protocol.base import ToolProtocol
+from echotools.exec.protocol.base import ToolProtocol
 
 # Tag constants
 _LT = chr(60)

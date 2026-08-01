@@ -3,12 +3,12 @@ import json
 import re
 from typing import List, Tuple
 
-from echotools.fncall.shared.coercion import (
+from echotools.exec.fncall.shared.coercion import (
     _build_param_schema_index,
     _coerce_param_value,
 )
-from echotools.fncall.shared.normalization import normalize_tool_calls
-from echotools.protocol.base import ToolProtocol
+from echotools.exec.fncall.shared.normalization import normalize_tool_calls
+from echotools.exec.protocol.base import ToolProtocol
 
 from .extra.sections import join_tagged_sections
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from echotools.fncall.prompt.templates import (
+from echotools.exec.fncall.prompt.templates import (
     _HISTORY_CLARIFY_EN,
     _HISTORY_CLARIFY_ZH,
 )
