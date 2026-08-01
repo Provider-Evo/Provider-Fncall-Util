@@ -24,7 +24,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest "provider-sdk>=0.3.2"
+          pip install pytest "provider-sdk>=0.3.10"
+          pip install --upgrade "git+https://github.com/Provider-Evo/provider-sdk.git@v0.3.10"
           pip install --upgrade "git+https://github.com/nichengfuben/echotools.git@v2.4.0"
           if [ -f pyproject.toml ] || [ -f setup.py ]; then
             pip install -e .
